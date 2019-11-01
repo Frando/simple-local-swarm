@@ -5,6 +5,8 @@ This uses unix domain sockets (or named pipes on windows) to open bidirectional 
 
 ## Example
 
+Below is a simple CLI example that lets any number of processes talk to each other. See [`test.js`](test.js) for an example that replicates [hypercores](https://github.com/mafintosh/hypercore).
+
 ```javascript
 const Swarm = require('.')
 
@@ -24,11 +26,17 @@ swarm.on('connection', (stream, details) => {
 # in a terminal
 > node example.js mytopic alice
 incoming: hello i am bob
-
+incoming: hello i am claire
 
 # in another terminal
 > node example.js mytopic bob
 incoming: hello i am alice
+incoming: hello i am claire
+
+# in another terminal
+> node example.js mytopic claire
+incoming: hello i am alice
+incoming: hello i am bob
 ```
 
 ## API
