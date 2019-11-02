@@ -1,5 +1,5 @@
 {
-  "name": "simple-local-socket",
+  "name": "simple-local-swarm",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
