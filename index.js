@@ -81,7 +81,7 @@ class LocalSwarm extends EventEmitter {
 
     function onpeers (err, peers) {
       if (err) return self.emit('error', err)
-      peers.forEach(peer => self._connect(peer))
+      peers.forEach(peer => self._connect(peer, topic))
     }
   }
 
@@ -144,28 +144,30 @@ class LocalSwarm extends EventEmitter {
     }
   }
 
-  _connect (name) {
+  _connect (name, topic) {
     if (this.connections[name]) return
-    if (this.shortcircuit && swarms[name]) return this._shortcircuit(name)
+    if (this.shortcircuit && swarms[name]) return this._shortcircuit(name, topic)
     const pid = name.split('-')[0]
     if (!pidIsRunning(pid)) return
 
     const sockpath = p.join(this.basedir, name + '.sock')
     const stream = net.createConnection(sockpath)
     stream.on('error', err => this.emit('error', err))
-    this._onconnection(stream, { client: true, peer: name })
+    const peer = { port: 0, local: true, topic, host: name }
+    this._onconnection(stream, { client: true, peer })
   }
 
-  _shortcircuit (name) {
+  _shortcircuit (name, topic) {
     if (!swarms[name]) return
+    const peer = { port: 0, local: true, topic }
     const [local, remote] = duplexPair()
-    swarms[name]._onconnection(remote, { client: false, peer: this.name })
-    this._onconnection(local, { client: true, peer: name })
+    swarms[name]._onconnection(remote, { client: false, peer: { ...peer, host: this.name } })
+    this._onconnection(local, { client: true, peer: { ...peer, host: name } })
   }
 
   _onconnection (stream, details) {
     details = details || { client: false }
-    if (details.peer) this.connections[details.peer] = stream
+    if (details.peer) this.connections[details.peer.host] = stream
     this.emit('connection', stream, details)
   }
 }
