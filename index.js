@@ -19,14 +19,26 @@ function createLocalSwarm (opts) {
 }
 
 class LocalServer extends Nanoresource {
-  constructor (sockfile, onconnection) {
+  constructor (path, onconnection) {
     super()
-    this.sockfile = sockfile
+    this.path = this.prefixPath(path)
     this.server = net.createServer(onconnection)
   }
 
+  prefixPath (path) {
+    let prefix = ''
+    if (process.platform === 'win32') {
+      prefix = '//./pipe/'
+    }
+    if (prefix.endsWith('/') && path.startsWith('/')) {
+      return prefix + path.substr(1)
+    } else {
+      return prefix + path
+    }
+  }
+
   _open (cb) {
-    this.server.listen(this.sockfile, cb)
+    this.server.listen(this.path, cb)
   }
 
   _close (cb) {
